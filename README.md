@@ -40,43 +40,43 @@ flowchart TD
         Gateway["Ngrok Tunnel / Cloudflare Tunnel"]
     end
 
-    subgraph ColabVM["Google Colab VM (Tesla T4 GPU - 16 GB VRAM)"]
+    subgraph ColabVM["Google Colab VM (Tesla T4 GPU)"]
         FastAPIApp["FastAPI REST & Streaming Server"]
         
         subgraph MemoryEngine["Three-Tier Hybrid Memory Engine"]
-            Tier1["Tier 1: Normalized Query Cache (TTLCache / SHA-256)"]
-            Tier2["Tier 2: Conversation Sliding Window (K = 6 turns)"]
-            Tier3["Tier 3: Rolling Clinical Summary (Background Async LLM)"]
+            Tier1["Tier 1: Normalized Query Cache (TTLCache)"]
+            Tier2["Tier 2: Conversation Sliding Window (K = 6)"]
+            Tier3["Tier 3: Rolling Clinical Summary"]
         end
 
         subgraph ModelCore["Inference Core"]
-            FastModel["Unsloth FastLanguageModel (Llama 3.1 8B 4-bit NF4)"]
-            Streamer["TextIteratorStreamer (Thread-isolated)"]
-            GPULock["GPU Mutex Lock (Thread Safety)"]
+            FastModel["Unsloth FastLanguageModel (Llama 3.1 8B)"]
+            Streamer["TextIteratorStreamer"]
+            GPULock["GPU Mutex Lock"]
         end
     end
 
     subgraph Storage["Persistent Cloud Storage"]
-        GDrive["Google Drive (/content/drive/MyDrive/.../merged_model_drive)"]
+        GDrive["Google Drive (merged_model_drive)"]
     end
 
-    UI -->|POST /chat (JSON)| Gateway
-    Gateway -->|Forward traffic| FastAPIApp
+    UI -->|"POST /chat (JSON)"| Gateway
+    Gateway -->|"Forward Traffic"| FastAPIApp
     
     FastAPIApp --> Tier1
-    Tier1 -->|Cache Hit < 10ms| FastAPIApp
-    Tier1 -->|Cache Miss| Tier2
+    Tier1 -->|"Cache Hit (under 10ms)"| FastAPIApp
+    Tier1 -->|"Cache Miss"| Tier2
     
-    Tier2 -->|Format ChatML Prompt| ModelCore
-    Tier2 -->|Overflow > K messages| Tier3
-    Tier3 -->|Async LLM extraction| ModelCore
-    Tier3 -.->|Inject into System Prompt| Tier2
+    Tier2 -->|"Format ChatML Prompt"| FastModel
+    Tier2 -->|"Overflow (exceeds K turns)"| Tier3
+    Tier3 -->|"Async LLM Extraction"| FastModel
+    Tier3 -.->|"Inject into System Prompt"| Tier2
 
-    GDrive -->|Load 16-bit / 4-bit merged weights| FastModel
+    GDrive -->|"Load Weights"| FastModel
     FastModel --> Streamer
-    Streamer -->|SSE stream text/event-stream| FastAPIApp
-    FastAPIApp -->|Chunked token events| UI
-    FastAPIApp -->|Metadata & summary updates| Inspector
+    Streamer -->|"SSE Stream (text/event-stream)"| FastAPIApp
+    FastAPIApp -->|"Chunked Token Events"| UI
+    FastAPIApp -->|"Metadata & Summary Updates"| Inspector
 ```
 
 ---
