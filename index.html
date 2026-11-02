@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VitaLlama 3.1 — Clinical Nutritionist AI</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       TOP CONFIG BAR — Colab / Ngrok URL Entry
+       ═══════════════════════════════════════════════════════════════ -->
+  <div class="config-bar">
+    <div class="logo">
+      <span class="icon">🌱</span>
+      <span class="logo-text">VitaLlama 3.1</span>
+    </div>
+
+    <div class="url-group">
+      <label for="apiUrl">Colab API URL</label>
+      <input
+        type="url"
+        id="apiUrl"
+        placeholder="https://xxxx-xx-xx.ngrok-free.app"
+        spellcheck="false"
+        autocomplete="off"
+      />
+      <span class="status-dot offline" id="statusDot"></span>
+      <button class="btn-connect disconnected" id="btnConnect" onclick="toggleConnection()">
+        Connect
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       MAIN LAYOUT
+       ═══════════════════════════════════════════════════════════════ -->
+  <div class="main-container">
+
+    <!-- ── CHAT PANEL ────────────────────────────────────────────── -->
+    <div class="chat-panel">
+
+      <!-- Messages -->
+      <div class="messages-area" id="messagesArea">
+        <div class="welcome" id="welcomeView">
+          <div class="welcome-icon">🥦</div>
+          <h2>Clinical Nutritionist AI</h2>
+          <p>
+            Powered by a fine-tuned <strong>Llama 3.1 8B</strong> model
+            with 3-tier hybrid memory. Connect your Colab API above, then
+            ask anything about diet, macros, or micronutrient guidance.
+          </p>
+          <div class="example-queries">
+            <button onclick="fillExample(this)">I'm a vegetarian runner feeling fatigued — what nutrients should I check?</button>
+            <button onclick="fillExample(this)">Create a 1 800 kcal meal plan for someone with PCOS</button>
+            <button onclick="fillExample(this)">What foods are high in iron and vitamin B12?</button>
+            <button onclick="fillExample(this)">I have IBS — which FODMAPs should I avoid?</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Typing Indicator -->
+      <div class="typing-indicator" id="typingIndicator">
+        <div class="avatar" style="background:var(--accent-green-bg)">🌱</div>
+        <div class="bubble" style="background:var(--bg-card);border:1px solid var(--border);padding:12px 16px;border-radius:var(--radius);border-top-left-radius:4px">
+          <div class="typing-dots"><span></span><span></span><span></span></div>
+        </div>
+      </div>
+
+      <!-- Input -->
+      <div class="input-bar">
+        <textarea
+          id="userInput"
+          rows="1"
+          placeholder="Ask about diet, nutrition, macros…"
+          disabled
+        ></textarea>
+        <button class="btn-send" id="btnSend" onclick="sendMessage()" disabled title="Send">
+          ➤
+        </button>
+      </div>
+    </div>
+
+    <!-- ── MEMORY INSPECTOR SIDEBAR ─────────────────────────────── -->
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <h3>🧠 Memory Inspector</h3>
+        <button class="btn-toggle-sidebar" onclick="toggleSidebar()" title="Close sidebar">✕</button>
+      </div>
+
+      <div class="sidebar-body">
+        <!-- Connection Status -->
+        <div class="info-card">
+          <div class="card-label">API Status</div>
+          <div class="card-value" id="sidebarStatus" style="color:var(--accent-red)">● Disconnected</div>
+        </div>
+
+        <!-- Session ID -->
+        <div class="info-card">
+          <div class="card-label">Session ID</div>
+          <div class="card-value mono" id="sidebarSessionId">—</div>
+        </div>
+
+        <!-- Inference Source Badge -->
+        <div class="info-card">
+          <div class="card-label">Last Response Source</div>
+          <div id="sidebarBadge">
+            <span class="inference-badge idle">⏸ Idle</span>
+          </div>
+        </div>
+
+        <!-- Latency -->
+        <div class="info-card">
+          <div class="card-label">Latency</div>
+          <div class="card-value" id="sidebarLatency">—</div>
+        </div>
+
+        <!-- Window Turns -->
+        <div class="info-card">
+          <div class="card-label">Sliding Window (Tier 2)</div>
+          <div class="card-value" id="sidebarWindow">0 / 6 turns active</div>
+        </div>
+
+        <!-- Clinical Summary -->
+        <div class="info-card">
+          <div class="card-label">Rolling Clinical Summary (Tier 3)</div>
+          <div class="clinical-summary-box" id="sidebarSummary">No prior clinical history recorded.</div>
+        </div>
+
+        <!-- Cache Stats -->
+        <div class="info-card">
+          <div class="card-label">Tier 1 Cache Stats</div>
+          <div class="card-value" id="sidebarCache">Queries: 0 &nbsp;|&nbsp; Hits: 0 &nbsp;|&nbsp; Ratio: 0%</div>
+        </div>
+      </div>
+
+      <div class="sidebar-footer">
+        <button class="btn-reset" onclick="resetSession()">🗑 Reset Session Memory</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating sidebar toggle (mobile only) -->
+  <button class="btn-sidebar-open" id="btnSidebarOpen" onclick="toggleSidebar()">🧠</button>
+
+  <!-- External JavaScript -->
+  <script src="app.js"></script>
+</body>
+</html>
